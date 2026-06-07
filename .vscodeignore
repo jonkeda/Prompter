@@ -1,0 +1,7 @@
+.git/**
+.my/**
+node_modules/**
+src/**
+*.ts
+tsconfig.json
+package-lock.json
