@@ -1,15 +1,31 @@
 # Prompter
 
-Prompter is a local VS Code sidebar extension for composing bounded prompts, selecting explicit context, saving prompts under `.my/prompts`, and staging prompts for Codex or Copilot.
+Prompter is now organized as a multi-extension workspace.
 
-## First Slice
+## Extensions
 
-- Sidebar UI with Prompt, Preview, and Settings tabs.
-- Prompt composition with command, location, context, verbosity, scope, and settings.
-- Send controls include the Codex/Copilot target selector directly beside the Send label.
-- Workspace prompt storage under `.my/prompts`.
-- Explorer context menu commands for adding files to the prompt or chat context.
-- Codex send actions launch the Codex CLI in an integrated terminal when available.
-- Copilot send actions can use the Chat panel route or the model API route.
-- The Chat panel route stages prompts in Copilot Chat with a selectable mode, defaulting to Agent mode without auto-submit.
-- The model API route activates VS Code's bundled Copilot Chat provider, streams the answer to `Prompter Copilot`, and opens a markdown response document when a Copilot model is selectable.
+- `extensions/vscode` contains the existing VS Code sidebar extension.
+- `extensions/visualstudio` contains a separate Visual Studio VSIX scaffold.
+- `shared/prompter-contract` documents the editor-neutral prompt contract both extensions should share.
+
+## Build
+
+Install Node dependencies from the repository root:
+
+```powershell
+npm install
+```
+
+Build the VS Code extension:
+
+```powershell
+npm run build:vscode
+```
+
+Build the Visual Studio extension:
+
+```powershell
+npm run build:visualstudio
+```
+
+The Visual Studio project requires the Visual Studio extension development workload.

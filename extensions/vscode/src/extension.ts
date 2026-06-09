@@ -71,6 +71,7 @@ interface PrompterSettings {
 interface PrompterState {
   activeTab: "prompt" | "preview" | "settings";
   title: string;
+  createDocument: boolean;
   command: string;
   location: string;
   verbosity: Verbosity;
@@ -91,7 +92,7 @@ interface SavedPrompt {
 const stateKey = "prompter.state";
 
 const initialCommands: InitialCommand[] = [
-  { value: "", label: "<none>", text: "" },
+  { value: "", label: "Type", text: "" },
   { value: "rca", label: "RCA", text: "Create a file for an RCA." },
   { value: "roadmap", label: "Roadmap", text: "Create a file for a roadmap." },
   { value: "issue", label: "Issue", text: "Create a file for an issue." },
@@ -114,6 +115,7 @@ function defaultState(): PrompterState {
   return {
     activeTab: "prompt",
     title: "Roadmap controls",
+    createDocument: true,
     command: "roadmap",
     location: ".my/plan",
     verbosity: "Brief",
@@ -567,11 +569,12 @@ class PrompterViewProvider implements vscode.WebviewViewProvider {
 
   private composePromptMarkdown(fileName: string, now: Date): string {
     const prompt = this.composePrompt();
-    const command = initialCommands.find((item) => item.value === this.state.command);
+    const command = this.state.createDocument ? selectedInitialCommand(this.state.command) : undefined;
     const metadata = this.state.settings.includeMetadata
       ? [
           "---",
           `title: ${JSON.stringify(this.state.title || "Untitled prompt")}`,
+          `createDocument: ${this.state.createDocument ? "true" : "false"}`,
           `command: ${JSON.stringify(command?.value ?? "")}`,
           `commandLabel: ${JSON.stringify(command?.label ?? "")}`,
           `createdAt: ${JSON.stringify(now.toISOString())}`,
@@ -582,7 +585,7 @@ class PrompterViewProvider implements vscode.WebviewViewProvider {
           `copilotRoute: ${JSON.stringify(this.state.settings.copilotRoute)}`,
           `copilotChatMode: ${JSON.stringify(this.state.settings.copilotChatMode)}`,
           `verbosity: ${JSON.stringify(this.state.verbosity)}`,
-          `location: ${JSON.stringify(this.state.location)}`,
+          `location: ${JSON.stringify(this.state.createDocument ? this.state.location : "")}`,
           "context:",
           ...this.state.contextItems.map((item) => `  - ${JSON.stringify(item.path)}`),
           `includeChecklist: ${this.state.settings.includeChecklist ? "true" : "false"}`,
@@ -596,14 +599,14 @@ class PrompterViewProvider implements vscode.WebviewViewProvider {
 
   private composePrompt(): string {
     const lines: string[] = [];
-    const command = initialCommands.find((item) => item.value === this.state.command);
-    if (command?.text) {
-      lines.push(command.text);
-    }
+    if (this.state.createDocument) {
+      const command = selectedInitialCommand(this.state.command);
+      lines.push(command?.text || "Create a file.");
 
-    const location = this.state.location.trim();
-    if (location) {
-      lines.push(`Put the created file under ${location}.`);
+      const location = this.state.location.trim();
+      if (location) {
+        lines.push(`Put the created file under ${location}.`);
+      }
     }
 
     if (this.state.contextItems.length) {
@@ -724,6 +727,9 @@ label, .label {
   padding: 6px;
   background: var(--vscode-editor-background);
 }
+.context-list {
+  margin-top: 6px;
+}
 .context-item, .saved-item {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -750,6 +756,21 @@ label, .label {
 }
 .check input {
   width: auto;
+}
+.document-row {
+  display: grid;
+  grid-template-columns: auto minmax(86px, 0.8fr) minmax(112px, 1.2fr);
+  gap: 6px;
+  align-items: center;
+  margin-top: 3px;
+}
+.document-row input[type="checkbox"] {
+  width: auto;
+  justify-self: start;
+}
+.document-row select,
+.document-row input[type="text"] {
+  min-width: 0;
 }
 .send-grid {
   display: grid;
@@ -793,6 +814,13 @@ label, .label {
   gap: 6px;
   margin-top: 9px;
 }
+.prompt-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.prompt-actions button {
+  flex: 0 0 auto;
+}
 .preview {
   white-space: pre-wrap;
   word-break: break-word;
@@ -828,10 +856,12 @@ label, .label {
 <section id="prompt" class="panel active">
   <label for="title">Title</label>
   <input id="title" data-field="title">
-  <label for="command">Initial command</label>
-  <select id="command" data-field="command"></select>
-  <label for="location">Location</label>
-  <input id="location" data-field="location">
+  <label for="createDocument">Create document</label>
+  <div class="document-row">
+    <input id="createDocument" type="checkbox" data-field="createDocument" aria-label="Create document">
+    <select id="command" data-field="command" aria-label="Type"></select>
+    <input id="location" type="text" data-field="location" aria-label="Location" placeholder="location">
+  </div>
   <label for="verbosity">Verbosity</label>
   <select id="verbosity" data-field="verbosity">
     <option>Brief</option>
@@ -857,7 +887,7 @@ label, .label {
   <div class="label">Context</div>
   <button id="selectContext">Select context</button>
   <div id="contextList" class="context-list"></div>
-  <div class="actions">
+  <div class="actions prompt-actions" aria-label="Prompt actions">
     <button id="savePrompt">Save</button>
     <button id="clearPrompt" class="secondary">Clear</button>
   </div>
@@ -991,6 +1021,7 @@ document.querySelector("#scopeToggle").addEventListener("click", () => {
 });
 document.querySelector("#clearPrompt").addEventListener("click", () => {
   state.title = "";
+  state.createDocument = false;
   state.command = "";
   state.location = state.settings.fileLocation || "";
   state.prompt = "";
@@ -1009,7 +1040,12 @@ function readInputs(event) {
   if (!state || event.target.id === "scopeToggle") return;
   const field = event.target.dataset.field;
   const setting = event.target.dataset.setting;
-  if (field) state[field] = event.target.value;
+  if (field) {
+    state[field] = event.target.type === "checkbox" ? event.target.checked : event.target.value;
+  }
+  if (field === "createDocument" && state.createDocument && !state.location) {
+    state.location = state.settings.fileLocation || "";
+  }
   if (setting) {
     state.settings[setting] = event.target.type === "number" ? Number(event.target.value) : event.target.value;
   }
@@ -1030,10 +1066,12 @@ function render() {
   document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === state.activeTab));
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === state.activeTab));
   setValue("#title", state.title);
+  document.querySelector("#createDocument").checked = Boolean(state.createDocument);
   setValue("#location", state.location);
   setValue("#verbosity", state.verbosity);
   setValue("#promptText", state.prompt);
   renderOptions("#command", initialCommands, state.command);
+  syncDocumentControls();
   renderContext();
   renderScope();
   document.querySelector("#previewText").textContent = preview || "";
@@ -1063,6 +1101,11 @@ function renderOptions(selector, options, selected) {
     select.append(el);
   }
   select.value = selected;
+}
+function syncDocumentControls() {
+  const enabled = Boolean(state.createDocument);
+  document.querySelector("#command").disabled = !enabled;
+  document.querySelector("#location").disabled = !enabled;
 }
 function renderContext() {
   const list = document.querySelector("#contextList");
@@ -1464,17 +1507,27 @@ function shQuote(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`;
 }
 
+function selectedInitialCommand(value: string): InitialCommand | undefined {
+  return initialCommands.find((item) => item.value === value && item.value);
+}
+
 function mergeState(base: PrompterState, patch?: Partial<PrompterState>): PrompterState {
   if (!patch) {
     return base;
   }
-  return {
+  const merged = {
     ...base,
     ...patch,
     scope: { ...base.scope, ...(patch.scope ?? {}) },
     settings: { ...base.settings, ...(patch.settings ?? {}) },
     contextItems: patch.contextItems ?? base.contextItems
   };
+
+  if (patch.createDocument === undefined && patch.command !== undefined) {
+    merged.createDocument = patch.command !== "";
+  }
+
+  return merged;
 }
 
 function getNonce(): string {

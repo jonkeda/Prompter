@@ -1,76 +1,17 @@
 {
-  "name": "prompter",
-  "displayName": "Prompter",
-  "description": "Compose bounded prompts and stage them for Codex or Copilot from the sidebar.",
-  "version": "0.1.5",
-  "publisher": "local",
-  "engines": {
-    "vscode": "^1.105.0"
-  },
-  "categories": [
-    "Other"
+  "name": "prompter-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Workspace for the Prompter editor extensions.",
+  "workspaces": [
+    "extensions/vscode"
   ],
-  "activationEvents": [
-    "onView:prompter.sidebar",
-    "onCommand:prompter.open",
-    "onCommand:prompter.addFileToPrompt",
-    "onCommand:prompter.addFileToChat"
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "prompter.open",
-        "title": "Prompter: Open"
-      },
-      {
-        "command": "prompter.addFileToPrompt",
-        "title": "Prompter: Add file to prompt"
-      },
-      {
-        "command": "prompter.addFileToChat",
-        "title": "Prompter: Add file to chat"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "prompter",
-          "title": "Prompter",
-          "icon": "media/prompter.svg"
-        }
-      ]
-    },
-    "views": {
-      "prompter": [
-        {
-          "id": "prompter.sidebar",
-          "name": "Prompter",
-          "type": "webview"
-        }
-      ]
-    },
-    "menus": {
-      "explorer/context": [
-        {
-          "command": "prompter.addFileToPrompt",
-          "group": "prompter@1"
-        },
-        {
-          "command": "prompter.addFileToChat",
-          "group": "prompter@2"
-        }
-      ]
-    }
-  },
   "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "vscode:prepublish": "npm run compile"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.14",
-    "@types/vscode": "^1.105.0",
-    "typescript": "^5.8.3"
+    "build": "npm run build:vscode",
+    "build:all": "npm run build:vscode && npm run build:visualstudio",
+    "build:vscode": "npm --workspace prompter run compile",
+    "watch:vscode": "npm --workspace prompter run watch",
+    "build:visualstudio": "dotnet build Prompter.sln",
+    "restore:visualstudio": "dotnet restore Prompter.sln"
   }
 }

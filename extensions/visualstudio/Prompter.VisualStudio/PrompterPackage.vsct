@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable">
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+
+  <Commands package="guidPrompterPackage">
+    <Groups>
+      <Group guid="guidPrompterCommandSet" id="PrompterGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
+      </Group>
+    </Groups>
+
+    <Buttons>
+      <Button guid="guidPrompterCommandSet" id="ShowPrompterToolWindow" priority="0x0100" type="Button">
+        <Parent guid="guidPrompterCommandSet" id="PrompterGroup" />
+        <Strings>
+          <ButtonText>Prompter</ButtonText>
+          <CommandName>Prompter</CommandName>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="guidPrompterPackage" value="{31c3f8bf-eb7e-47a0-876f-a3cea43cc890}" />
+    <GuidSymbol name="guidPrompterCommandSet" value="{5947d250-1892-4a02-8a3a-b55b8b52f0df}">
+      <IDSymbol name="PrompterGroup" value="0x1020" />
+      <IDSymbol name="ShowPrompterToolWindow" value="0x0100" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
