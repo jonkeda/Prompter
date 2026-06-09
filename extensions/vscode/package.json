@@ -4,6 +4,7 @@
   "description": "Compose bounded prompts and stage them for Codex or Copilot from the sidebar.",
   "version": "0.1.6",
   "publisher": "local",
+  "icon": "media/prompter.png",
   "engines": {
     "vscode": "^1.105.0"
   },
