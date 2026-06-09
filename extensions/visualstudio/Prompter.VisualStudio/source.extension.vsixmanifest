@@ -6,6 +6,7 @@
     <Identity Id="Prompter.VisualStudio" Version="0.1.6" Language="en-US" Publisher="local" />
     <DisplayName>Prompter</DisplayName>
     <Description xml:space="preserve">Compose bounded prompts and stage them from Visual Studio.</Description>
+    <Icon>Resources\PrompterIcon.png</Icon>
     <Tags>prompts;codex;copilot</Tags>
   </Metadata>
   <Installation>

@@ -13,12 +13,17 @@
     <Buttons>
       <Button guid="guidPrompterCommandSet" id="ShowPrompterToolWindow" priority="0x0100" type="Button">
         <Parent guid="guidPrompterCommandSet" id="PrompterGroup" />
+        <Icon guid="guidPrompterImages" id="PrompterCommandIcon" />
         <Strings>
           <ButtonText>Prompter</ButtonText>
           <CommandName>Prompter</CommandName>
         </Strings>
       </Button>
     </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="guidPrompterImages" href="Resources\PrompterCommand.png" usedList="PrompterCommandIcon" />
+    </Bitmaps>
   </Commands>
 
   <Symbols>
@@ -26,6 +31,9 @@
     <GuidSymbol name="guidPrompterCommandSet" value="{5947d250-1892-4a02-8a3a-b55b8b52f0df}">
       <IDSymbol name="PrompterGroup" value="0x1020" />
       <IDSymbol name="ShowPrompterToolWindow" value="0x0100" />
+    </GuidSymbol>
+    <GuidSymbol name="guidPrompterImages" value="{6bdbed59-ac41-4785-8595-a947222f8e10}">
+      <IDSymbol name="PrompterCommandIcon" value="1" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>
